@@ -14,6 +14,18 @@ router.use(cors());
 // 轉議json 資料
 router.use(express.json());
 
+router.get('/detail/:art_Id', async (req, res) => {
+    try {
+        const artId = req.params.art_Id;
+        const sqlSelect = `SELECT * FROM art WHERE art_id = ?`;
+        const [result] = await db.query(sqlSelect, [artId]);
+        res.json(result);
+    } catch (error) {
+        console.error("Error fetching share data:", error);
+        res.status(500).json({ error: "An error occurred while fetching share data." });
+    }
+});
+
 router.get('/sharesEssence', async (req, res) => {
     try {
         const sqlSelect = `SELECT * FROM art WHERE art_id IN (584, 583, 582, 581)`;
@@ -22,6 +34,28 @@ router.get('/sharesEssence', async (req, res) => {
     } catch (error) {
         console.error("Error fetching share data:", error);
         res.status(500).json({ error: "An error occurred while fetching share data." });
+    }
+});
+
+const getShareByYearHandler = async (cateId) => {
+    try {
+        const sqlSelect = `SELECT * FROM art WHERE cate_id = ?`;
+        const [result] = await db.query(sqlSelect, [cateId]);
+        return result;
+    } catch (error) {
+        console.error("Error fetching share data:", error);
+        throw new Error("An error occurred while fetching share data.");
+    }
+};
+
+router.get("/selectShareByYear/:cateId", async (req, res) => {
+    try {
+        const cateId = req.params.cateId;
+        const output = await getShareByYearHandler(cateId);
+        res.json(output);
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 // router 一定要回傳module

@@ -14,16 +14,40 @@ router.use(cors());
 // 轉議json 資料
 router.use(express.json());
 
-router.get('/sharesEssence', async (req, res) => {
+const newsselect = async (artType) => {
     try {
-        const sqlSelect = `SELECT * FROM art WHERE cate_id IN (584, 583, 582, 581)`;
-        const [result] = await db.query(sqlSelect);
+        const sqlSelect = `SELECT * FROM news WHERE art_type = ?`;
+        const [result] = await db.query(sqlSelect, [artType]);
+        return result;
+    } catch (error) {
+        console.error("Error fetching share data:", error);
+        throw new Error("An error occurred while fetching share data.");
+    }
+};
+
+router.get("/newsselect/:art_type", async (req, res) => {
+    try {
+        const art_type = req.params.art_type;
+        const output = await newsselect(art_type);
+        res.json(output);
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+router.get('/newdetail/:new_id', async (req, res) => {
+    try {
+        const new_id = req.params.new_id;
+        const sqlSelect = `SELECT * FROM news WHERE new_id = ?`;
+        const [result] = await db.query(sqlSelect, [new_id]);
         res.json(result);
     } catch (error) {
         console.error("Error fetching share data:", error);
         res.status(500).json({ error: "An error occurred while fetching share data." });
     }
 });
+//share
 
 const getShareByYearHandler = async (cateId) => {
     try {
