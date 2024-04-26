@@ -1,0 +1,334 @@
+// 1. 這裡導入所有要預設變數覆蓋
+// --------------------------------
+$primary: #152046;
+// $secondary: #f4c445;
+
+// --------------------------------
+
+// 2. 導入bootstrap所有的樣式與預設變數
+// --------------------------------
+@import "~bootstrap/scss/bootstrap";
+
+ul {
+    padding: 0 ;
+    margin: 0 ;
+}
+// --------------------------------
+
+// 3. 其它要導入覆蓋掉原本的預設bootstrap樣式要放在這下面
+// 全站都會使用的共同樣式
+// --------------------------------
+:root {
+    //各種顏色
+    --primary_color: #152046;
+    --primary_color_900: #0a1e22;
+    --primary_color_600: #1a5252;
+    --primary_color_500: #62b6b6;
+    --secondary_color: #952e1f;
+    --error_color: #C7000B;
+    --background_color: #f2f2f2;
+    --input_color: #fff6e7;
+    --brown_color: #c1a688;
+
+    //各種文字大小
+    --h1_text: 96px;
+    --h2_text: 60px;
+    --h3_text: 48px;
+    --h4_text: 34px;
+    --h5_text: 24px;
+    --subtitle_text: 16px;
+    --button_text: 14px;
+    --text_size: 16px;
+}
+
+h1 {
+    font-size: var(--h1_text);
+}
+
+h2 {
+    font-size: var(--h2_text);
+}
+
+h3 {
+    font-size: var(--h3_text);
+}
+
+h4 {
+    font-size: var(--h4_text);
+}
+
+h5 {
+    font-size: var(--h5_text);
+}
+
+p {
+    font-size: var(--text_size);
+}
+
+//----------input&label-----------//
+/* input LABEL */
+@mixin input_label {
+    color: #999;
+    font-size: var(--subtitle_text);
+    font-weight: normal;
+    position: absolute;
+    pointer-events: none;
+    left: var(--text_size);
+    top: calc(var(--text_size) * 0.7);
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+}
+/* input */
+@mixin input_style {
+    font-size: var(--subtitle_text);
+    padding: var(--text_size) var(--text_size) var(--text_size)
+        calc(var(--text_size) * 3);
+    display: block;
+    width: calc(var(--h4_text) * 10);
+    height: var(--h3_text);
+    border: none;
+    background-color: #fff6e7;
+    border-radius: var(--h3_text);
+    color: var(--primary_color);
+    &:focus,
+    &:invalid {
+        outline: 1px solid #224040;
+    }
+    &:focus ~ label,
+    &:invalid ~ label {
+        top: calc((var(--h5_text)) * (-1));
+        font-size: var(--text_size);
+        color: var(--primary_color);
+    }
+}
+
+// input 外面包一層div群組
+// 可統一使用
+.input_group {
+    position: relative;
+}
+
+// 如果要用input style 可以這樣引用
+// input {
+//     @include input_style;
+// }
+
+//如果要用label style 可以這樣引用
+// label {
+//     @include input_label;
+// }
+//----------input&label-----------//
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    &::-webkit-scrollbar {
+        background-color: #7fa9a99a;
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(36, 42, 32, 0.2);
+        border-radius: 5px;
+    }
+}
+
+@media (max-width: 1680px) {
+    :root {
+        --h1_text: 84px;
+        --h2_text: 50px;
+        --h3_text: 40px;
+        --h4_text: 28px;
+        --h5_text: 20px;
+        --subtitle_text: 16px;
+        --button_text: 14px;
+        --text_size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --h1_text: 60px;
+        --h2_text: 46px;
+        --h3_text: 36px;
+        --h4_text: 22px;
+        --h5_text: 16px;
+        --subtitle_text: 14px;
+        --button_text: 14px;
+        --text_size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --h1_text: 48px;
+        --h2_text: 36px;
+        --h3_text: 28px;
+        --h4_text: 20px;
+        --h5_text: 14px;
+        --subtitle_text: 14px;
+        --button_text: 12px;
+        --text_size: 12px;
+    }
+}
+
+// --------------------------------
+/* 共用CSS */
+body {
+    font-family: 'Rufina', serif;
+}
+a {
+    text-decoration: none
+}
+.mb100 {
+    margin-bottom: 100px;
+}
+.mt100 {
+    margin-top: 100px;
+}
+.pb100 {
+    padding-bottom: 100px;
+}
+
+/* Background Color */
+
+.mainbg {
+    background-color:  var(--primary_color);
+}
+.yellowbg {
+    background-color:  #f0c400;
+}
+.greenbg {
+    background-color:  #06aa4a;
+}
+.redbg {
+    background-color:  var(--error_color);
+}
+.primary500bg {
+    background-color:  var(--primary_color_500);
+}
+
+.beckertitlename {
+    font-size: 3rem;
+    text-align: center;
+    font-weight: 700;
+    
+}
+.beckersubtitle {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.br {
+    border-bottom: #000000 solid 1px;
+}
+.fx {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+/* Banner */
+.banner {
+    width: 100%;
+    position: relative;
+}
+.banner img {
+    position: relative;
+    width: 100%;
+    object-fit: contain;   
+}
+.bannerblock {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    border-style: solid;
+    border-width: 0 0 700px 1200px;
+    border-color: transparent transparent #4d4d4d85 transparent;
+}
+.bannercircle {
+    position: absolute;
+    left: 10%;
+    top: 15%;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    border: #ffff solid 3px;
+    background-color: #ffffff77;
+} 
+.bannertext {
+    position: absolute;
+    right: 5%;
+    bottom: 5%;
+    font-family: 'Rufina', serif;
+    font-weight: 700;
+    font-size: 30pt;
+    text-align: right;
+    color: #ffff;
+}
+.aboutbannertext {
+    position: relative;
+    text-align: center;
+    font-family: 'Rufina', serif;
+    font-weight: 300;
+    font-size: 20pt;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.faqbannertext {
+    position: absolute;
+    font-family: 'Rufina', serif;
+    font-weight: 700;
+    font-size: 5rem;
+    left: 10%;
+    bottom: 5%;
+    color: #ffff;
+}
+.bannerttitle {
+    position: absolute;
+    font-family: 'Rufina', serif;
+    font-weight: 700;
+    font-size: 5rem;
+    left: 10%;
+    bottom: 5%;
+    color: #ffff;
+}
+.cpabannertext {
+    position: absolute;
+    font-family: 'Rufina', serif;
+    font-weight: 700;
+    color: #ffff;
+    font-size: 5rem;
+    top: 5%;
+    right: 5%;
+    line-height: 5rem;
+    text-align: right;
+}
+.cmabannertext {
+    position: absolute;
+    font-family: 'Rufina', serif;
+    font-weight: 700;
+    color: #2e2e2e;
+    font-size: 5rem;
+    top: 25%;
+    left: 5%;
+    text-align: left;
+}
+.lgtext {
+    font-size: 55pt;
+    line-height: 5rem;
+}
+.lxtext {
+    font-size: 70pt;
+}
+.bgb {
+    background-color: var(--primary_color);
+}

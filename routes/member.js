@@ -40,6 +40,17 @@ router.use("/avatar_img", express.static(__dirname + "/../public/avartar_img"));
 
 //     // res.json(req.file);
 // });
+router.get('/memareaData/:mem_id', async (req, res) => {
+    try {
+        const mem_id = req.params.mem_id; // 正確取得 mem_id
+        const sqlSelect = `SELECT * FROM mem WHERE mem_id = ?`;
+        const [result] = await db.query(sqlSelect, [mem_id]);
+        res.json(result);
+    } catch (error) {
+        console.error("Error fetching share data:", error);
+        res.status(500).json({ error: "An error occurred while fetching share data." });
+    }
+});
 
 router.post("/upload-avatar/:userId", async (req, res) => {
     const userId = req.params.userId;
@@ -61,7 +72,7 @@ router.post("/upload-avatar/:userId", async (req, res) => {
             //使用 mv() 方法來移動上傳檔案到要放置的目錄裡 (例如 "uploads")
             avatar.mv("./public/avatar_img/" + avatar.name);
 
-            const url = `http://localhost:3700/avatar_img/${avatar.name}`;
+            const url = `http://localhost:npm/avatar_img/${avatar.name}`;
 
             const sql = "UPDATE `memberdata` SET`m_avatar`=? WHERE `m_id`=?";
 
