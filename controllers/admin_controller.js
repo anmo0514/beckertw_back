@@ -49,11 +49,11 @@ const update = async (req, res, next) => {
 }
 
 const register = async (req, res, next) => {
-    if (await pm.modifyAdmin(req)) {
+    // if (await pm.modifyAdmin(req)) {
         await admin.register(req, res, next);
-    } else {
-        res.json(new dbe.QueryResult([{}], "You don't have the permissions. ", 403))
-    }
+    // } else {
+    //     res.json(new dbe.QueryResult([{}], "You don't have the permissions. ", 403))
+    // }
 }
 
 const deleted = async (req, res, next) => {

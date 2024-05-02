@@ -11,7 +11,7 @@ class Admin {
         this.account = req.body.account;
         this.password = req.body.password;    
         this.status = req.body.status;      
-        this.settint_type = req.body.settint_type;      
+        //this.settint_type = req.body.settint_type;      
  
         this.update = async () => {
             try{
@@ -20,7 +20,7 @@ class Admin {
                         let model = new dbe.DBModel('manager');
                         if (v.exists(this.name)) model.add('name', this.name); 
                         if (v.exists(this.status)) model.add('status', this.status); 
-                        if (v.exists(this.settint_type)) model.add('settint_type', this.settint_type); 
+                        //if (v.exists(this.settint_type)) model.add('settint_type', this.settint_type); 
                         //if (v.exists(this.account)) model.add('account', this.account);
                         //if (v.exists(this.password)) model.add('password', await enc.sha256(this.password));
                         if (v.exists(this.admin_id)) model.addWhere("admin_id", "=", this.admin_id);
@@ -43,7 +43,7 @@ class Admin {
                         if (v.exists(this.account)) model.add('account', this.account);
                         if (v.exists(this.password)) model.add('password', await enc.sha256(this.password));
                         if (v.exists(this.status)) model.add('status', this.status); 
-                        if (v.exists(this.settint_type)) model.add('settint_type', this.settint_type); 
+                        //if (v.exists(this.settint_type)) model.add('settint_type', this.settint_type); 
                         return await model.insert();
                     } else return new dbe.QueryResult([{}], "Already login.", 422);
                 }

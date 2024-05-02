@@ -43,7 +43,6 @@ router.put('/', [
             throw new Error('Invalid string in name.');
         }),
         body('status').trim().isInt().optional({nullable:true}),
-        body('settint_type').trim().isInt().optional({nullable:true}),
     ], validate, admin.update
 );
 
@@ -68,7 +67,6 @@ router.post('/', [
             return true;
         }),
         body('status').trim().isInt().optional({nullable:true}).default(1),
-        body('settint_type').trim().isInt(),
     ], validate, admin.register
 );
 
