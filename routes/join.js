@@ -103,6 +103,7 @@ router.post("/login", async (req, res) => {
             token,
             account: r1[0].account,
             mem_id: r1[0].mem_id,
+            name: r1[0].chinese_name,
         };
         console.log(output.data);
     }
