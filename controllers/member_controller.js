@@ -24,9 +24,25 @@ const get = async (req, res, next) => {
     }    
 }
 
+const getCount = async (req, res, next) => {
+    if (await pm.modifyMember(req, req.body.mem_id)) {
+        res.json(await mem.getCount());
+    } else {
+        res.json(new dbe.QueryResult([{}], "You don't have the permissions. ", 403))
+    }    
+}
+
 const getAll = async (req, res, next) => {
     if (await pm.modifyAdmin(req)) {
         res.json(await mem.getAll());
+    } else {
+        res.json(new dbe.QueryResult([{}], "You don't have the permissions. ", 403))
+    }    
+}
+
+const getAllByPage = async (req, res, next) => {
+    if (await pm.modifyAdmin(req)) {
+        res.json(await mem.getAll(req.query.page, req.query.rows));
     } else {
         res.json(new dbe.QueryResult([{}], "You don't have the permissions. ", 403))
     }    
@@ -67,7 +83,9 @@ const deleted = async (req, res, next) => {
 module.exports = {
     resetPassword,
     get,
+    getCount,
     getAll,
+    getAllByPage,
     update,
     register,
     changeStatus,

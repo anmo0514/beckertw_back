@@ -10,9 +10,10 @@ class Admin {
         this.name = req.body.name;
         this.account = req.body.account;
         this.password = req.body.password;    
+        this.position = req.body.position;      
         this.status = req.body.status;      
-        //this.settint_type = req.body.settint_type;      
- 
+
+        
         this.update = async () => {
             try{
                 if (this.type === 'update'){
@@ -20,9 +21,19 @@ class Admin {
                         let model = new dbe.DBModel('manager');
                         if (v.exists(this.name)) model.add('name', this.name); 
                         if (v.exists(this.status)) model.add('status', this.status); 
-                        //if (v.exists(this.settint_type)) model.add('settint_type', this.settint_type); 
-                        //if (v.exists(this.account)) model.add('account', this.account);
-                        //if (v.exists(this.password)) model.add('password', await enc.sha256(this.password));
+                        if (v.exists(this.position)) model.add('position', this.position); 
+                        if (v.exists(this.password)) {
+                            let sqlPassword = "SELECT * FROM `manager` WHERE `admin_id` = " + (this.admin_id + '');
+                            const validPassword = await dbe.search(sqlPassword, null, true);
+                            if (validPassword) {
+                                if(validPassword[0].password !== this.password){
+                                    const newPassword = await enc.sha256(this.password);
+                                    if(validPassword[0].password !== newPassword) {
+                                        model.add('password', newPassword);
+                                    }
+                                }
+                            }
+                        }
                         if (v.exists(this.admin_id)) model.addWhere("admin_id", "=", this.admin_id);
                         return await model.update();
                     } else return new dbe.QueryResult([{}], "Required identitfy number.", 422);
@@ -42,6 +53,7 @@ class Admin {
                         if (v.exists(this.name)) model.add('name', this.name); 
                         if (v.exists(this.account)) model.add('account', this.account);
                         if (v.exists(this.password)) model.add('password', await enc.sha256(this.password));
+                        if (v.exists(this.position)) model.add('position', this.position); 
                         if (v.exists(this.status)) model.add('status', this.status); 
                         //if (v.exists(this.settint_type)) model.add('settint_type', this.settint_type); 
                         return await model.insert();
@@ -63,7 +75,7 @@ const loginValidator = async(account, password) => {
     if (!Object.keys(resultAccount[0]).length)
         return new dbe.QueryResult(resultAccount[0], "Account not found.", Object.keys(resultAccount[0]).length ? 200 : 404);
 
-    const sql = "SELECT * FROM `manager` WHERE `account` = ? AND `password` = ?;";
+    const sql = "SELECT * FROM `manager` WHERE `account` = ? AND `password` = ? AND `status` = 1;";
     const params = [account, await enc.sha256(password)];
     const result = await dbe.search(sql, params);
     return new dbe.QueryResult(result[0], "", Object.keys(result[0]).length ? 200 : 404);
@@ -83,8 +95,7 @@ const duplicateValid = async (account = null) => {
 
 const register = async (req, res, next) => {
     const model = new Admin('insert', req);
-    if (req.body.password === req.body.repassword) {
-        const validResult = await duplicateValid(model.account);
+    const validResult = await duplicateValid(model.account);
         if(validResult) {
             res.json(new dbe.QueryResult([{}], validResult, 422));
         } else {
@@ -92,9 +103,13 @@ const register = async (req, res, next) => {
             //console.log(result);
             res.json(new dbe.QueryResult(result.data[1], "", result.status));
         }
+    /*
+    if (req.body.password === req.body.repassword) {
+        
     } else {
         res.json(new dbe.QueryResult([{}], "Passwords are inconsistent", 422));
     }
+    */
 }
 
 const resetPassword = async (req) => {
@@ -121,7 +136,7 @@ const get = async (id) => {
 }
 
 const getAll = async () => {
-    const sql = 'SELECT * FROM `manager` ORDER BY `admin_id`;';
+    const sql = 'SELECT * FROM `manager` ORDER BY `status` DESC, `admin_id`;';
     return await dbe.search(sql);
 }
 

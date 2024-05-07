@@ -41,6 +41,7 @@ router.put('/', [
             if(verify.identiferString(value)) return true;
             throw new Error('Invalid string in name.');
         }).optional({nullable:true}),
+        body('password', 'Invalid password format.').trim().notEmpty().isLength({min:6, max:200}),
         body('subject').trim().isString().optional({nullable:true}),
         body('xtype').trim().isString().optional({nullable:true}),
         body('subject2').trim().isString().optional({nullable:true}),
@@ -59,16 +60,7 @@ router.post('/', [
             throw new Error('Invalid string in name.');
         }),
         body('email', 'Invalid email format.').trim().notEmpty().toLowerCase().isEmail().isLength({max:200}),
-        body('password', 'Invalid password format.').trim().notEmpty().isLength({min:6, max:200}).custom((value, {req}) => {
-            if(!verify.commonString(value)) throw new Error('Invalid string in password.');
-            if(value !== req.body.repassword) throw new Error('Passwords are inconsistent.');
-            return true;
-        }),
-        body('repassword', 'Invalid repassword format.').trim().notEmpty().isLength({min:6, max:200}).custom((value, {req}) => {
-            if(!verify.commonString(value)) throw new Error('Invalid string in repassword.');
-            if(value !== req.body.password) throw new Error('Passwords are inconsistent.');
-            return true;
-        }),
+        body('password', 'Invalid password format.').trim().notEmpty().isLength({min:6, max:200}),
         body('subject').trim().notEmpty().isString(),
         body('xtype').trim().notEmpty().isString(),
         body('subject2').trim().notEmpty().isString(),
@@ -79,5 +71,16 @@ router.post('/', [
 
 router.delete('/:teacher_id', [param('teacher_id').trim().notEmpty().isInt()], validate, teacher.deleted);
 
-
+/*
+body('password', 'Invalid password format.').trim().notEmpty().isLength({min:6, max:200}).custom((value, {req}) => {
+    if(!verify.commonString(value)) throw new Error('Invalid string in password.');
+    if(value !== req.body.repassword) throw new Error('Passwords are inconsistent.');
+    return true;
+}),
+body('repassword', 'Invalid repassword format.').trim().notEmpty().isLength({min:6, max:200}).custom((value, {req}) => {
+    if(!verify.commonString(value)) throw new Error('Invalid string in repassword.');
+    if(value !== req.body.password) throw new Error('Passwords are inconsistent.');
+    return true;
+}),
+*/
 module.exports = router;

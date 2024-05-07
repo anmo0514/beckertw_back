@@ -29,18 +29,35 @@ class Mem {
         this.industry = req.body.industry;
         this.company_name = req.body.company_name;
         this.info_way = req.body.info_way;
- 
+        this.pass = req.body.pass;
+        this.postpone = req.body.postpone;
+        this.refund = req.body.refund;
+        this.account_status = req.body.account_status;
+
         this.update = async () => {
             try{
                 if (this.type === 'update'){
                     if (this.mem_id > 0){
                         let model = new dbe.DBModel('mem');
                         if (v.exists(this.chinese_name)) model.add('chinese_name', this.chinese_name); 
+                        if (v.exists(this.password)) {
+                            let sqlPassword = "SELECT * FROM `mem` WHERE `mem_id` = " + (this.mem_id + '');
+                            const validPassword = await dbe.search(sqlPassword, null, true);
+                            if (validPassword) {
+                                if(validPassword[0].password !== this.password){
+                                    const newPassword = await enc.sha256(this.password);
+                                    if(validPassword[0].password !== newPassword) {
+                                        model.add('password', newPassword);
+                                    }
+                                }
+                            }
+                        }
                         if (v.exists(this.first_name)) model.add('first_name', this.first_name);
                         if (v.exists(this.last_name)) model.add('last_name', this.last_name);
                         if (v.exists(this.auth)) model.add('auth', this.auth);
                         if (v.exists(this.comment)) model.add('comment', this.comment);
-                        if (v.exists(this.active_date, false)) model.add('active_date', this.active_date);
+                        if (v.exists(this.active_date, false)) model.add('active_date', dt.toDatetimeString(this.active_date));
+                        if (v.exists(this.purchase_date, false)) model.add('purchase_date', dt.toDatetimeString(this.purchase_date));
                         if (v.exists(this.user_type)) model.add('user_type', this.user_type);
                         if (v.exists(this.id_num)) model.add('id_num', this.id_num);
                         if (v.exists(this.phone_num)) model.add('phone_num', this.phone_num);
@@ -53,6 +70,10 @@ class Mem {
                         if (v.exists(this.industry)) model.add('industry', this.industry);
                         if (v.exists(this.company_name)) model.add('company_name', this.company_name);
                         if (v.exists(this.info_way)) model.add('info_way', this.info_way);
+                        if (v.exists(this.pass)) model.add('pass', this.pass);
+                        if (v.exists(this.postpone)) model.add('postpone', this.postpone);
+                        if (v.exists(this.refund)) model.add('refund', this.refund);
+                        if (v.exists(this.account_status)) model.add('account_status', this.account_status);
                         if (v.exists(this.mem_id)) model.addWhere("mem_id", "=", this.mem_id);
                         return await model.update();
                     } else return new dbe.QueryResult([{}], "Required identitfy number.", 422);
@@ -74,10 +95,10 @@ class Mem {
                         if (v.exists(this.password, false)) model.add('password', await enc.sha256(this.password)); 
                         if (v.exists(this.first_name)) model.add('first_name', this.first_name);
                         if (v.exists(this.last_name)) model.add('last_name', this.last_name);
-                        if (v.exists(this.purchase_date, false)) model.add('purchase_date', this.purchase_date);
+                        if (v.exists(this.purchase_date, false)) model.add('purchase_date', dt.toDatetimeString(this.purchase_date));
                         if (v.exists(this.auth)) model.add('auth', this.auth);
                         if (v.exists(this.comment)) model.add('comment', this.comment);
-                        if (v.exists(this.active_date, false)) model.add('active_date', this.active_date);
+                        if (v.exists(this.active_date, false)) model.add('active_date', dt.toDatetimeString(this.active_date));
                         if (v.exists(this.user_type)) model.add('user_type', this.user_type);
                         if (v.exists(this.id_num)) model.add('id_num', this.id_num);
                         if (v.exists(this.phone_num)) model.add('phone_num', this.phone_num);
@@ -90,6 +111,10 @@ class Mem {
                         if (v.exists(this.industry)) model.add('industry', this.industry);
                         if (v.exists(this.company_name)) model.add('company_name', this.company_name);
                         if (v.exists(this.info_way)) model.add('info_way', this.info_way);
+                        if (v.exists(this.pass)) model.add('pass', this.pass);
+                        if (v.exists(this.postpone)) model.add('postpone', this.postpone);
+                        if (v.exists(this.refund)) model.add('refund', this.refund);
+                        if (v.exists(this.account_status)) model.add('account_status', this.account_status);
                         return await model.insert();
                     } else return new dbe.QueryResult([{}], "Already login.", 422);
                 }
@@ -99,7 +124,7 @@ class Mem {
                 return new dbe.QueryResult([{}], err, 403);
             }
         }
-    }
+    } 
 }
 
 
@@ -120,18 +145,22 @@ const duplicateValid = async (account = null, email = null) => {
 
 const register = async (req, res, next) => {
     const model = new Mem('insert', req);
+    const validResult = await duplicateValid(model.account, model.email);
+    if(validResult) {
+        res.json(new dbe.QueryResult([{}], validResult, 422));
+    } else {
+        const result = await model.insert();
+        //console.log(result);
+        res.json(new dbe.QueryResult(result.data[1], "", result.status));
+    }
+    /*
+    const model = new Mem('insert', req);
     if (req.body.password === req.body.repassword) {
-        const validResult = await duplicateValid(model.account, model.email);
-        if(validResult) {
-            res.json(new dbe.QueryResult([{}], validResult, 422));
-        } else {
-            const result = await model.insert();
-            //console.log(result);
-            res.json(new dbe.QueryResult(result.data[1], "", result.status));
-        }
+        
     } else {
         res.json(new dbe.QueryResult([{}], "Passwords are inconsistent.", 422));
     }
+    */
 }
 
 const loginValidator = async(account, password) => {
@@ -142,7 +171,7 @@ const loginValidator = async(account, password) => {
     if (!Object.keys(resultAccount[0]).length)
         return new dbe.QueryResult(resultAccount[0], "Account not found.", Object.keys(resultAccount[0]).length ? 200 : 404);
 
-    const sql = "SELECT * FROM `mem` WHERE `account` = ? AND `password` = ?;";
+    const sql = "SELECT * FROM `mem` WHERE `account` = ? AND `password` = ? AND `account_status` = 1;";
     const params = [account, await enc.sha256(password)];
     const result = await dbe.search(sql, params);
     return new dbe.QueryResult(result[0], "", Object.keys(result[0]).length ? 200 : 404);
@@ -154,8 +183,13 @@ const get = async (id) => {
     return await dbe.search(sql, param);
 }
 
-const getAll = async () => {
-    const sql = 'SELECT * FROM `mem` ORDER BY `mem_id`;';
+const getCount = async () => {
+    const sql = 'SELECT COUNT(`mem_id`) as `total` FROM `mem`;';
+    return await dbe.search(sql);
+}
+
+const getAll = async (page=0, defaultRows=50) => {
+    const sql = 'SELECT * FROM `mem` ORDER BY `account_status` DESC, `createtime` DESC, `mem_id` LIMIT ' + (page + "") + ", " + (defaultRows + "") + ";";
     return await dbe.search(sql);
 }
 
@@ -180,8 +214,8 @@ const resetPassword = async (req) => {
 }
 
 const changeStatus = async (req) => {
-    const sql = "UPDATE `mem` SET `status` = ? WHERE `teacher_id` = ?;";
-    const params = [req.body.status, req.body.mem_id];
+    const sql = "UPDATE `mem` SET `account_status` = ? WHERE `mem_id` = ?;";
+    const params = [req.body.account_status, req.body.mem_id];
     const result = await dbe.transaction(sql, params);
     if (result[1][0].affectedRows === 0) {
         return new dbe.QueryResult([{}], "Nothing to changed.", 422);
@@ -207,6 +241,7 @@ module.exports = {
     loginValidator,
     update,
     get,
+    getCount,
     getAll,
     deleted,
     changeStatus,

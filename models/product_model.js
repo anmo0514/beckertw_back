@@ -9,6 +9,7 @@ class Product {
         this.name = req.body.name;
         this.parent_id = req.body.parent_id;
         this.price = req.body.price;   
+        this.status = req.body.status;   
 
         if (['GET', 'DELETE'].includes(req.method)){
             this.product_id = req.params.product_id;   
@@ -22,6 +23,7 @@ class Product {
                     if (v.exists(this.name)) model.add('name', this.name); 
                     if (v.exists(this.parent_id)) model.add('parent_id', this.parent_id); 
                     if (v.exists(this.price)) model.add('price', this.price);
+                    if (v.exists(this.status)) model.add('status', this.status);
                     if (v.exists(this.product_id)) model.addWhere("product_id", "=", this.product_id);
                     return await model.update();
                 } else return new dbe.QueryResult([{}], "Required identitfy number.", 422);
@@ -37,6 +39,7 @@ class Product {
                 if (v.exists(this.name)) model.add('name', this.name); 
                 if (v.exists(this.parent_id)) model.add('parent_id', this.parent_id); 
                 if (v.exists(this.price)) model.add('price', this.price);
+                if (v.exists(this.status)) model.add('status', this.status);
                 return await model.insert();
             } catch (err) {
                 l.cError(err);

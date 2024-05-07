@@ -22,6 +22,7 @@ router.put('/', [
         body('name').trim().isString().isLength({max:255}).optional({nullable: true}),
         body('parent_id').trim().isInt().optional({nullable: true}),
         body('price').trim().isInt().optional({nullable: true}),
+        body('status').trim().isInt().optional({nullable: true}),
     ], validate, product.update
 );
 
@@ -33,6 +34,7 @@ router.post('/', [
         body('name').trim().notEmpty().isString().isLength({max:255}),
         body('parent_id').trim().notEmpty().isInt(),
         body('price').trim().notEmpty().isInt(),
+        body('status').trim().isInt().optional({nullable: true}).default(1),
     ], validate, product.insert
 );
 

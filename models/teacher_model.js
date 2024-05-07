@@ -2,6 +2,7 @@ const dbe = require(__dirname + "../../modules/mysql-excute");
 const enc = require(__dirname + "../../modules/encryption");
 const v = require(__dirname + "../../modules/verify");
 const l = require(__dirname + "../../modules/logs");
+const {toDatetimeString} = require(__dirname + "../../modules/date-tools");
 
 class Teacher {
     constructor (type, req) {
@@ -23,11 +24,27 @@ class Teacher {
                     if (this.teacher_id > 0){
                         let model = new dbe.DBModel('teacher');
                         if (v.exists(this.name)) model.add('name', this.name); 
+                        if (v.exists(this.password)) {
+                            let sqlPassword = "SELECT * FROM `teacher` WHERE `teacher_id` = " + (this.teacher_id + '');
+                            const validPassword = await dbe.search(sqlPassword, null, true);
+                            if (validPassword) {
+                                if(validPassword[0].password !== this.password){
+                                    const newPassword = await enc.sha256(this.password);
+                                    if(validPassword[0].password !== newPassword) {
+                                        model.add('password', newPassword);
+                                    }
+                                }
+                            }
+                        }
                         if (v.exists(this.subject)) model.add('subject', this.subject);
                         if (v.exists(this.xtype)) model.add('xtype', this.xtype);
                         if (v.exists(this.subject2)) model.add('subject2', this.subject2);
                         if (v.exists(this.xtype2)) model.add('xtype2', this.xtype2);
                         if (v.exists(this.status)) model.add('status', this.status);
+                        if (this.status + "" === "0"){
+                            model.add('disabletime', toDatetimeString(Date.now()));
+                            
+                        }
                         if (v.exists(this.teacher_id)) model.addWhere("teacher_id", "=", this.teacher_id);
                         return await model.update();
                     } else return new dbe.QueryResult([{}], "Required identitfy number.", 422);
@@ -72,7 +89,7 @@ const loginValidator = async(email, password) => {
     if (!Object.keys(resultEmail[0]).length)
         return new dbe.QueryResult(resultEmail[0], "Account not found.", Object.keys(resultEmail[0]).length ? 200 : 404);
 
-    const sql = "SELECT * FROM `teacher` WHERE `email` = ? AND `password` = ?;";
+    const sql = "SELECT * FROM `teacher` WHERE `email` = ? AND `password` = ? AND `status` = 1;";
     const params = [email, await enc.sha256(password)];
     const result = await dbe.search(sql, params);
     return new dbe.QueryResult(result[0], "", Object.keys(result[0]).length ? 200 : 404);
@@ -92,18 +109,21 @@ const duplicateValid = async (email = null) => {
 
 const register = async (req, res, next) => {
     const model = new Teacher('insert', req);
+    const validResult = await duplicateValid(model.email);
+    if(validResult) {
+        res.json(new dbe.QueryResult([{}], validResult, 422));
+    } else {
+        const result = await model.insert();
+        //console.log(result);
+        res.json(new dbe.QueryResult(result.data[1], "", result.status));
+    }
+    /*
     if (req.body.password === req.body.repassword) {
-        const validResult = await duplicateValid(model.email);
-        if(validResult) {
-            res.json(new dbe.QueryResult([{}], validResult, 422));
-        } else {
-            const result = await model.insert();
-            //console.log(result);
-            res.json(new dbe.QueryResult(result.data[1], "", result.status));
-        }
+  
     } else {
         res.json(new dbe.QueryResult([{}], "Passwords are inconsistent", 422));
     }
+    */
 }
 
 const resetPassword = async (req) => {
@@ -129,7 +149,7 @@ const get = async (id) => {
 }
 
 const getAll = async () => {
-    const sql = 'SELECT * FROM `teacher` ORDER BY `teacher_id`;';
+    const sql = 'SELECT * FROM `teacher` ORDER BY `status` DESC, `teacher_id`;';
     return await dbe.search(sql);
 }
 

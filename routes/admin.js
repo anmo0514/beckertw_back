@@ -18,6 +18,7 @@ router.use(cors());
 // 轉議json 資料
 router.use(express.json());
 
+/*
 router.put('/resetpassword', [
         body('admin_id').trim().notEmpty().isInt(),
         body('oldPassword').trim().notEmpty().isString().isLength({min:6, max:200}),
@@ -29,6 +30,7 @@ router.put('/resetpassword', [
         }),
     ], validate, admin.resetPassword
 );
+*/
 
 router.put('/status', [
         body('admin_id').trim().notEmpty().isInt(), 
@@ -42,6 +44,8 @@ router.put('/', [
             if(verify.identiferString(value)) return true;
             throw new Error('Invalid string in name.');
         }),
+        body('password').trim().notEmpty().isString().isLength({min:6, max:200}),
+        body('position').trim().isString().optional({nullable:true}),
         body('status').trim().isInt().optional({nullable:true}),
     ], validate, admin.update
 );
@@ -56,16 +60,8 @@ router.post('/', [
             throw new Error('Invalid string in name.');
         }),
         body('account', 'Invalid email format.').trim().notEmpty().toLowerCase().isEmail().isLength({min:2, max:200}),
-        body('password', 'Invalid password format.').trim().notEmpty().isLength({min:6, max:200}).custom((value, {req}) => {
-            if(!verify.commonString(value)) throw new Error('Invalid string in password.');
-            if(value !== req.body.repassword) throw new Error('Passwords are inconsistent.');
-            return true;
-        }),
-        body('repassword', 'Invalid repassword format.').trim().notEmpty().isLength({min:6, max:200}).custom((value, {req}) => {
-            if(!verify.commonString(value)) throw new Error('Invalid string in repassword.');
-            if(value !== req.body.password) throw new Error('Passwords are inconsistent.');
-            return true;
-        }),
+        body('password', 'Invalid password format.').trim().notEmpty().isLength({min:6, max:200}),
+        body('position').trim().isString().optional({nullable:true}).default(''),
         body('status').trim().isInt().optional({nullable:true}).default(1),
     ], validate, admin.register
 );
@@ -73,3 +69,17 @@ router.post('/', [
 router.delete('/:admin_id', [param('admin_id').trim().notEmpty().isInt()], validate, admin.deleted);
 
 module.exports = router;
+
+/*
+body('password', 'Invalid password format.').trim().notEmpty().isLength({min:6, max:200}).custom((value, {req}) => {
+    if(!verify.commonString(value)) throw new Error('Invalid string in password.');
+    if(value !== req.body.repassword) throw new Error('Passwords are inconsistent.');
+    return true;
+}),
+body('repassword', 'Invalid repassword format.').trim().notEmpty().isLength({min:6, max:200}).custom((value, {req}) => {
+    if(!verify.commonString(value)) throw new Error('Invalid string in repassword.');
+    if(value !== req.body.password) throw new Error('Passwords are inconsistent.');
+    return true;
+}),
+
+*/
