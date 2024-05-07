@@ -76,7 +76,7 @@ router.post("/login", async (req, res) => {
         code: 0,
         data: {},
     };
-    const sql = "SELECT * FROM mem WHERE account=?";
+    const sql = "SELECT * FROM mem WHERE account = ?";
     const [r1] = await db.query(sql, [req.body.account]);
 
     if (!r1.length) {
@@ -85,14 +85,8 @@ router.post("/login", async (req, res) => {
         output.error = "查無此帳號，請先申請會員";
         return res.json(output);
     }
-    const row = r1[0];
 
-    row.m_birthday = toDateString(row.m_birthday);
-    row.create_at = toDateString(row.create_at);
-
-    console.log(row);
-
-    output.success = await bcrypt.compare(req.body.password, r1[0].m_passwd);
+    output.success = await bcrypt.compare(req.body.password, r1[0].password);
     if (!output.success) {
         // 密碼錯誤
         output.code = 402;
@@ -101,17 +95,16 @@ router.post("/login", async (req, res) => {
         // 成功登入
         const token = jwt.sign(
             {
-                sid: r1[0].sid,
-                account: r1[0].m_username,
+                mem_id: r1[0].mem_id,
+                account: r1[0].account,
             },
             process.env.JWT_SECRET
         );
 
         output.data = {
             token,
-            account: r1[0].m_username,
-            sid: r1[0].m_id,
-            ...row,
+            account: r1[0].account,
+            mem_id: r1[0].mem_id,
         };
         console.log(output.data);
     }
@@ -165,39 +158,37 @@ router.get("/googleLogin", async (req, res, next) => {
 });
 
 router.post("/register", async (req, res) => {
-    const { account, password, email } = req.body;
+    const { chinese_name, account, password } = req.body;
 
-    //check if data is missing
-    if (!account || !password || !email) {
-        return res.json({ message: "缺少資料", code: "400" });
+    // 檢查是否有缺少資料
+    if (!account || !password || !chinese_name) {
+        return res.status(400).json({ message: "缺少資料", code: "400" });
     }
 
-    //check if memberdata already exsited
-    const checkSql = "SELECT * FROM `memberdata` WHERE m_username =?";
+    // 檢查帳號是否已經存在
+    const checkSql = "SELECT * FROM `mem` WHERE account = ? ";
     const [checkResult] = await db.query(checkSql, [account]);
 
     if (checkResult.length > 0) {
         console.log(checkResult);
-        return res.json({ message: "fail", code: "400" });
-    } else {
-        const hashPw = await bcrypt.hash(password, 10);
-
-        const sql =
-            "INSERT INTO `memberdata`( `m_username`, `m_passwd`, `m_email`,  `create_at`) VALUES (?,?,?,NOW())";
-        const [result] = await db.query(sql, [account, hashPw, email]);
-
-        const checkIdSql =
-            "SELECT m_id FROM `memberdata` ORDER BY m_id DESC LIMIT 1";
-        const [[lastId]] = await db.query(checkIdSql);
-
-        const id = lastId.m_id;
-
-        const couponSql =
-            "INSERT INTO `member_coupon`( `m_id`, `coupon_id`, `coupon_status`) VALUES (?,5,0)";
-        const [couponResult] = await db.query(couponSql, [id]);
-
-        res.json(result);
+        return res.status(400).json({ message: "帳號已存在", code: "400" });
     }
+
+    // 將密碼進行加密
+    const hashPw = await bcrypt.hash(password, 10);
+
+    // 獲取目前資料表中最大的 mem_id
+    const maxIdSql = "SELECT MAX(mem_id) AS maxId FROM `mem`";
+    const [[maxIdResult]] = await db.query(maxIdSql);
+    const nextId = maxIdResult.maxId + 1;
+
+    // 插入新會員資料
+    const sql =
+        "INSERT INTO `mem`( `mem_id`, `chinese_name`,`account`, `password`, `createtime`) VALUES (?,?,?,?,NOW())";
+    const [result] = await db.query(sql, [nextId, chinese_name, account, hashPw]);
+
+    // 返回成功訊息
+    res.status(200).json({ message: "註冊成功", code: "200" });
 });
 
 router.post("/reset-password-email", async (req, res, next) => {

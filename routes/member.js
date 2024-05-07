@@ -1,5 +1,6 @@
 const express = require("express");
 // 連結到資料庫
+const db = require(__dirname + "../../modules/mysql-connect");
 // 設定路由
 const router = express.Router();
 const bodyParser = require("body-parser");
@@ -16,6 +17,28 @@ router.use(bodyParser.urlencoded({ extended: false }));
 router.use(cors());
 // 轉議json 資料
 router.use(express.json());
+
+router.get('/memareaData/:mem_id', async (req, res) => {
+    try {
+        const mem_id = req.params.mem_id;
+        console.log("Received mem_id:", mem_id); // 調試信息
+        
+        // 構建 SQL 查詢語句
+        const sqlSelect = `SELECT * FROM mem WHERE mem_id = ?`;
+        console.log("SQL query:", sqlSelect); // 調試信息
+        
+        // 執行數據庫查詢
+        const [result] = await db.query(sqlSelect, [mem_id]);
+        console.log("Query result:", result); // 調試信息
+        
+        // 返回查詢結果
+        res.json(result);
+    } catch (error) {
+        console.error("Error fetching member area data:", error);
+        console.error("Detailed error:", error); // 打印詳細錯誤訊息
+        res.status(500).json({ error: "An error occurred while fetching share data." });
+    }
+});
 
 router.put('/resetpassword', [
         body('mem_id').trim().notEmpty().isInt(),
